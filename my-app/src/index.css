@@ -11,3 +11,26 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.calc-body {
+  height: 75vh;
+}
+
+.calc-display {
+  height: 1.5em;
+  font-size: 2.5em;
+  text-align: right;
+}
+
+.calc-keypad {
+  height: calc(100% - 2.5em);
+  border-top: 1px solid #000;
+}
+
+.calc-button {
+  width: 25%;
+  height: 20%;
+  box-shadow: 1px 1px 0 #000;
+  display: inline-block;
+
+}

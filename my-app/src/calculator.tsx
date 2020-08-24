@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { type } from 'os';
 type Props = {showDisplay: boolean};
-type State = {inputValues: string[]};
+type State = {inputValues: string[], inputGroup: 0};
 export class Calculator extends React.Component<Props, State> {
     constructor(p: Props) {
         super(p);
         this.state = {
-            inputValues: []
+            inputValues: [],
+            inputGroup: 0
         }
         this.addValue = this.addValue.bind(this);
         this.renderButtons = this.renderButtons.bind(this);
@@ -14,9 +15,19 @@ export class Calculator extends React.Component<Props, State> {
     }
 
     addValue(input = '1') {
-        let tmp = this.state.inputValues;
-        tmp.push(input);
-        this.setState({inputValues: tmp});
+        let tmpIndex = this.state.inputGroup;
+        let tmpVal = this.state.inputValues;
+        
+        if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
+            tmpIndex ++;
+            tmpVal[tmpIndex] += input;
+            tmpIndex ++;
+        }
+        else {
+            tmpVal[tmpIndex] += input;
+        }
+        //tmpVal.push(input);
+        this.setState({inputValues: tmpVal});
     }
 
     flipValue() {

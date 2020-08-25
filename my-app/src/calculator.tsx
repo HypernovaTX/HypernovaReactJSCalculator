@@ -15,14 +15,24 @@ export class Calculator extends React.Component<Props, State> {
 
     addValue(input = '1') {
         let tmpIndex = this.state.inputGroup;
-        let tmpVal = this.state.inputValues;
+        let tmpVal = this.state.inputValues
+        if (tmpVal[tmpIndex] == undefined) {
+            tmpVal[tmpIndex] = '';
+        }
         
         //determine if it's a number or an operator 
         if (input.match(/^[\+\-\*\/]*$/)) {
-            tmpIndex ++;
-            tmpVal[tmpIndex] += input;
-            tmpIndex ++;
+            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
+                tmpVal[tmpIndex] = input;
+            } else {
+                tmpIndex ++;
+                tmpVal[tmpIndex] = input;
+            }
         } else {
+            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
+                tmpIndex ++;
+                tmpVal[tmpIndex] = '';
+            }
             tmpVal[tmpIndex] += input;
         }
         
@@ -45,7 +55,7 @@ export class Calculator extends React.Component<Props, State> {
     }
 
     renderButtons() {
-        let buttonContent = '789+456-123x0.±/';
+        let buttonContent = '789+456-123*0.±/';
         let contentResult = [];
         for (let i = 0; i < buttonContent.length; i++) {
             const element = buttonContent.charAt(i);

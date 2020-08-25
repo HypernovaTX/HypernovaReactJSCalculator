@@ -50,7 +50,7 @@ export class Calculator extends React.Component<Props, State> {
                 } else {
                     tmpVal[tmpIndex] += input;
                 }
-            } else if (input == '0' && tmpVal[tmpIndex].match(/\./)) {
+            } else if (input == '0' && (tmpVal[tmpIndex].match(/\./) || tmpVal[tmpIndex] == '')) {
                 tmpVal[tmpIndex] += input;
             }
         }

@@ -21,21 +21,29 @@ export class Calculator extends React.Component<Props, State> {
             tmpVal[tmpIndex] = '';
         }
         
-        //determine if it's a number or an operator 
+        //---- Handles the format ----//
+        //If it's an operator: + - * /
         if (input.match(/^[\+\-\*\/]*$/)) {
-            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
+            //previous input is an operator
+            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) { 
                 tmpVal[tmpIndex] = input;
-            } else {
+            }
+            //previous input is NOT an operator
+            else { 
                 let roundNum = parseFloat(tmpVal[tmpIndex]);
                 tmpVal[tmpIndex] = roundNum.toString();
                 tmpIndex ++;
                 tmpVal[tmpIndex] = input;
             }
-        } else {
+        }
+        //NOT an operator (numbers, decimals)
+        else {
+            //reformat a new set of numbers if the previous input is an operator
             if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
                 tmpIndex ++;
                 tmpVal[tmpIndex] = '';
             }
+            //add the number from the input (also make sure we don't get 000...)
             if (input != '0') {
                 if (tmpVal[tmpIndex] == '0' && input != '.') {
                     tmpVal[tmpIndex] = input;

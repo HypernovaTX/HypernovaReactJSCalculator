@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { type } from 'os';
 type Props = {showDisplay: boolean};
-type State = {inputValues: string[], inputGroup: 0};
+type State = {inputValues: string[], inputGroup: number};
 export class Calculator extends React.Component<Props, State> {
     constructor(p: Props) {
         super(p);
@@ -18,16 +17,21 @@ export class Calculator extends React.Component<Props, State> {
         let tmpIndex = this.state.inputGroup;
         let tmpVal = this.state.inputValues;
         
-        if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
+        //determine if it's a number or an operator 
+        if (input.match(/^[\+\-\*\/]*$/)) {
             tmpIndex ++;
             tmpVal[tmpIndex] += input;
             tmpIndex ++;
-        }
-        else {
+        } else {
             tmpVal[tmpIndex] += input;
         }
-        //tmpVal.push(input);
-        this.setState({inputValues: tmpVal});
+        
+        //tmpVal.push(input); //old method to insert inputs into array
+        this.setState({inputValues: tmpVal, inputGroup: tmpIndex});
+    }
+
+    assemble() {
+
     }
 
     flipValue() {

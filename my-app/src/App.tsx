@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from './logo.svg';
+//import logo from './logo.svg';
 import './App.css';
 import axios from 'axios';
 import {Calculator} from './calculator';
@@ -13,7 +13,6 @@ function App(this: any) {
 
   return (
     <div className="App">
-      <Calculator showDisplay={true}/>
       <Calculator showDisplay={true}/>
     </div>
   );

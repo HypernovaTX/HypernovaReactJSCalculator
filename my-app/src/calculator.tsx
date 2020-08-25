@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { stringify } from 'querystring';
 type Props = {showDisplay: boolean};
 type State = {inputValues: string[], inputGroup: number};
 export class Calculator extends React.Component<Props, State> {
     constructor(p: Props) {
         super(p);
         this.state = {
-            inputValues: [],
+            inputValues: ['0'],
             inputGroup: 0
         }
         this.addValue = this.addValue.bind(this);
@@ -25,6 +26,8 @@ export class Calculator extends React.Component<Props, State> {
             if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
                 tmpVal[tmpIndex] = input;
             } else {
+                let roundNum = parseFloat(tmpVal[tmpIndex]);
+                tmpVal[tmpIndex] = roundNum.toString();
                 tmpIndex ++;
                 tmpVal[tmpIndex] = input;
             }
@@ -33,7 +36,15 @@ export class Calculator extends React.Component<Props, State> {
                 tmpIndex ++;
                 tmpVal[tmpIndex] = '';
             }
-            tmpVal[tmpIndex] += input;
+            if (input != '0') {
+                if (tmpVal[tmpIndex] == '0' && input != '.') {
+                    tmpVal[tmpIndex] = input;
+                } else {
+                    tmpVal[tmpIndex] += input;
+                }
+            } else if (input == '0' && tmpVal[tmpIndex].match(/\./)) {
+                tmpVal[tmpIndex] += input;
+            }
         }
         
         //tmpVal.push(input); //old method to insert inputs into array
@@ -55,7 +66,7 @@ export class Calculator extends React.Component<Props, State> {
     }
 
     renderButtons() {
-        let buttonContent = '789+456-123*0.±/';
+        let buttonContent = '789+456-123*±0./';
         let contentResult = [];
         for (let i = 0; i < buttonContent.length; i++) {
             const element = buttonContent.charAt(i);

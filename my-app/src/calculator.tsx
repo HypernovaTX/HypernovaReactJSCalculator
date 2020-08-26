@@ -16,6 +16,7 @@ export class Calculator extends React.Component<Props, State> {
         this.flipValue = this.flipValue.bind(this);
     }
 
+    //main input function
     addValue(input = '1') {
         let tmpIndex = this.state.inputGroup;
         let tmpVal = this.state.inputValues;
@@ -117,6 +118,7 @@ export class Calculator extends React.Component<Props, State> {
         return answer.toString();
     }
 
+    //when "<x|" is pressed
     deleteValues() {
         let tmpIndexD = this.state.inputGroup;
         let tmpValD = this.state.inputValues;
@@ -132,10 +134,12 @@ export class Calculator extends React.Component<Props, State> {
         }
     }
 
+    //When "C" is pressed
     clearAll() {
         this.setState({inputValues: ['0'], inputGroup: 0, answered: false});
     }
 
+    //pretty obvious
     squareRoot() {
         let SRvalue = 0;
         if (this.state.inputGroup == 2) {
@@ -146,7 +150,7 @@ export class Calculator extends React.Component<Props, State> {
         this.setState({inputValues: [SRvalue.toString()]});
     }
 
-    //flip between +/-
+    //flip between +/- 
     flipValue() { 
         let tmpValF = this.state.inputValues;
         let tmpIndexF = this.state.inputGroup;

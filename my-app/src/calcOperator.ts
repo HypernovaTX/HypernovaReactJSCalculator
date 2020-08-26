@@ -1,3 +1,3 @@
 export function inputOperator(txt = '0') {
-    return parseFloat(eval(txt));
+    //return parseFloat(eval(txt));
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { stringify } from 'querystring';
+import { exit } from 'process';
 type Props = {showDisplay: boolean};
 type State = {inputValues: string[], inputGroup: number};
 export class Calculator extends React.Component<Props, State> {
@@ -16,9 +17,14 @@ export class Calculator extends React.Component<Props, State> {
 
     addValue(input = '1') {
         let tmpIndex = this.state.inputGroup;
-        let tmpVal = this.state.inputValues
+        let tmpVal = this.state.inputValues;
         if (tmpVal[tmpIndex] == undefined) {
             tmpVal[tmpIndex] = '';
+        }
+
+        //SPECIAL PURPOSE INPUTS
+        if (input == '±') {
+            this.flipValue();
         }
         
         //---- Handles the format ----//
@@ -31,9 +37,16 @@ export class Calculator extends React.Component<Props, State> {
             //previous input is NOT an operator
             else { 
                 let roundNum = parseFloat(tmpVal[tmpIndex]);
-                tmpVal[tmpIndex] = roundNum.toString();
+                tmpVal[tmpIndex] = roundNum.toString(); //need to round the numbers (to prevent something like: "x.000...")
                 tmpIndex ++;
-                tmpVal[tmpIndex] = input;
+                if (tmpIndex >= 3) {
+                    tmpVal[0] = this.calculate(true);
+                    tmpVal[1] = input;
+                    tmpVal[2] = '';
+                    tmpIndex = 1;
+                } else {
+                    tmpVal[tmpIndex] = input;
+                }
             }
         }
         //NOT an operator (numbers, decimals)
@@ -48,9 +61,14 @@ export class Calculator extends React.Component<Props, State> {
                 if (tmpVal[tmpIndex] == '0' && input != '.') {
                     tmpVal[tmpIndex] = input;
                 } else {
-                    tmpVal[tmpIndex] += input;
+                    if (input == '.' && !(tmpVal[tmpIndex].match(/\./))) {
+                        tmpVal[tmpIndex] += input;
+                    }
+                    else if (input != '.') {
+                        tmpVal[tmpIndex] += input;
+                    }
                 }
-            } else if (input == '0' && (tmpVal[tmpIndex].match(/\./) || tmpVal[tmpIndex] == '')) {
+            } else if (input == '0' && (tmpVal[tmpIndex].match(/\./) || tmpVal[tmpIndex] == '' || tmpVal[tmpIndex] != '0')) {
                 tmpVal[tmpIndex] += input;
             }
         }
@@ -59,11 +77,50 @@ export class Calculator extends React.Component<Props, State> {
         this.setState({inputValues: tmpVal, inputGroup: tmpIndex});
     }
 
-    assemble() {
+    calculate(endEquation = false, operator = '') {
+        let firstVal = parseFloat(this.state.inputValues[0]);
+        let numOperator = this.state.inputValues[1];
+        let secondVal = parseFloat(this.state.inputValues[2]);
+        let answer = 0;
+        
+        console.log('2ndval = ' + secondVal);
+        if (secondVal.toString() == 'NaN') {
+            this.setState({inputValues: [firstVal.toString()]});
+            return this.state.inputValues[0];
+        }
 
+        switch (numOperator) {
+            case ('+'): answer = firstVal + secondVal; break;
+            case ('-'): answer = firstVal - secondVal; break;
+            case ('*'): answer = firstVal * secondVal; break;
+            case ('/'): answer = firstVal / secondVal; break;
+        }
+
+        if (endEquation == true) {
+            this.setState({inputValues: [answer.toString()], inputGroup: 1});
+        } else {
+            this.setState({inputValues: [answer.toString(), operator]});
+        }
+        
+        return answer.toString();
     }
 
-    flipValue() {
+    clearAll() {
+        this.setState({inputValues: ['0'], inputGroup: 0});
+    }
+
+    squareRoot() {
+        let value = 0;
+        if (this.state.inputGroup == 2) {
+            value = Math.sqrt(parseInt(this.calculate(true)));
+        } else {
+            value = Math.sqrt(parseInt(this.state.inputValues[0]));
+        }
+        this.setState({inputValues: [value.toString()]});
+    }
+
+    //flip between +/-
+    flipValue() { 
         let tmp = this.state.inputValues;
         if (this.state.inputValues[0] != "-") {
             tmp.unshift('-');
@@ -74,14 +131,21 @@ export class Calculator extends React.Component<Props, State> {
     }
 
     renderButtons() {
-        let buttonContent = '789+456-123*±0./';
+        const buttonContent = 'C⌫√+789-456*123/±0.=';
         let contentResult = [];
         for (let i = 0; i < buttonContent.length; i++) {
             const element = buttonContent.charAt(i);
-            if (element != '±') {
-                contentResult.push(<div className='calc-button' onClick={() => this.addValue(element)}>{element}</div>);
+            switch (element) {
+                case ('C'): contentResult.push(<div className='calc-button' onClick={() => this.clearAll()}>{element}</div>); break;
+                case ('='): contentResult.push(<div className='calc-button' onClick={() => this.calculate(true)}>{element}</div>); break;
+                case ('±'): contentResult.push(<div className='calc-button' onClick={() => this.flipValue()}>{element}</div>); break;
+                case ('√'): contentResult.push(<div className='calc-button' onClick={() => this.squareRoot()}>{element}</div>); break;
+                default: contentResult.push(<div className='calc-button' onClick={() => this.addValue(element)}>{element}</div>); break;
+            }
+            if (element != '') {
+                
             } else {
-                contentResult.push(<div className='calc-button' onClick={() => this.flipValue()}>{element}</div>);
+                
             }
         }
         return contentResult;

@@ -14,6 +14,7 @@ code {
 
 .calc-body {
   height: 75vh;
+  min-height: 240px;
 }
 
 .calc-display {
@@ -32,5 +33,16 @@ code {
   height: 20%;
   box-shadow: 1px 1px 0 #000;
   display: inline-block;
+  user-select: none;
+  -moz-user-select: none;
+  transition: all linear 100ms;
+  background: rgba(0,0,0,0);
+}
 
+.calc-button:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.calc-button:active {
+  background: rgba(0,0,0,0.4);
 }

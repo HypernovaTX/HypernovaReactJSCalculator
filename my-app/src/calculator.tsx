@@ -68,7 +68,7 @@ export class Calculator extends React.Component<Props, State> {
             }
             //add the number from the input (also make sure we don't get 000...)
             if (input != '0') {
-                if (parseFloat(tmpVal[tmpIndex]) == 0 && input != '.') {
+                if (parseFloat(tmpVal[tmpIndex]) == 0 && tmpVal[tmpIndex] != "0." && input != '.') {
                     tmpVal[tmpIndex] = input;
                 } else {
                     if (input == '.' && !(tmpVal[tmpIndex].match(/\./))) {
@@ -115,6 +115,21 @@ export class Calculator extends React.Component<Props, State> {
         }
         
         return answer.toString();
+    }
+
+    deleteValues() {
+        let tmpIndexD = this.state.inputGroup;
+        let tmpValD = this.state.inputValues;
+        if (tmpValD[tmpIndexD] == '') {
+            tmpIndexD -= 1;
+        }
+        if (tmpIndexD >= 0) {
+            tmpValD[tmpIndexD] = tmpValD[tmpIndexD].slice(0, -1);
+            if (tmpValD[0] == '') {
+                tmpValD[0] = '0';
+            }
+            this.setState({inputValues: tmpValD, inputGroup: tmpIndexD});
+        }
     }
 
     clearAll() {
@@ -164,6 +179,7 @@ export class Calculator extends React.Component<Props, State> {
                 case ('='): contentResult.push(<div className='calc-button' onClick={() => this.calculate(true)}>{element}</div>); break;
                 case ('±'): contentResult.push(<div className='calc-button' onClick={() => this.flipValue()}>{element}</div>); break;
                 case ('√'): contentResult.push(<div className='calc-button' onClick={() => this.squareRoot()}>{element}</div>); break;
+                case ('⌫'): contentResult.push(<div className='calc-button' onClick={() => this.deleteValues()}>{element}</div>); break;
                 default: contentResult.push(<div className='calc-button' onClick={() => this.addValue(element)}>{element}</div>); break;
             }
             if (element != '') {

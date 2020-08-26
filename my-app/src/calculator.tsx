@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { stringify } from 'querystring';
 import { exit } from 'process';
 type Props = {showDisplay: boolean};
-type State = {inputValues: string[], inputGroup: number};
+type State = {inputValues: string[], inputGroup: number, answered: boolean};
 export class Calculator extends React.Component<Props, State> {
     constructor(p: Props) {
         super(p);
         this.state = {
             inputValues: ['0'],
-            inputGroup: 0
+            inputGroup: 0,
+            answered: false
         }
         this.addValue = this.addValue.bind(this);
         this.renderButtons = this.renderButtons.bind(this);
@@ -40,7 +41,7 @@ export class Calculator extends React.Component<Props, State> {
                 tmpVal[tmpIndex] = roundNum.toString(); //need to round the numbers (to prevent something like: "x.000...")
                 tmpIndex ++;
                 if (tmpIndex >= 3) {
-                    tmpVal[0] = this.calculate(true);
+                    tmpVal[0] = this.calculate();
                     tmpVal[1] = input;
                     tmpVal[2] = '';
                     tmpIndex = 1;
@@ -48,11 +49,20 @@ export class Calculator extends React.Component<Props, State> {
                     tmpVal[tmpIndex] = input;
                 }
             }
+
+            this.setState({answered: false});
         }
         //NOT an operator (numbers, decimals)
         else {
+            //overwrite last answered equation
+            //console.log("IsAnswered = " + this.state.answered.toString()); //debug use
+            if (this.state.answered == true) {
+                this.clearAll();
+                tmpIndex = 0;
+                tmpVal = [''];
+            }
             //reformat a new set of numbers if the previous input is an operator
-            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) {
+            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/) && tmpVal[tmpIndex] != '') {
                 tmpIndex ++;
                 tmpVal[tmpIndex] = '';
             }
@@ -77,18 +87,20 @@ export class Calculator extends React.Component<Props, State> {
         this.setState({inputValues: tmpVal, inputGroup: tmpIndex});
     }
 
-    calculate(endEquation = false, operator = '') {
+    calculate(endEquation = false) {
         let firstVal = parseFloat(this.state.inputValues[0]);
         let numOperator = this.state.inputValues[1];
         let secondVal = parseFloat(this.state.inputValues[2]);
         let answer = 0;
         
-        console.log('2ndval = ' + secondVal);
+        //Prevent multi "=" button bug
+        //console.log('2ndval = ' + secondVal); //debug purpose
         if (secondVal.toString() == 'NaN') {
             this.setState({inputValues: [firstVal.toString()]});
             return this.state.inputValues[0];
         }
 
+        //do the calculation
         switch (numOperator) {
             case ('+'): answer = firstVal + secondVal; break;
             case ('-'): answer = firstVal - secondVal; break;
@@ -96,23 +108,23 @@ export class Calculator extends React.Component<Props, State> {
             case ('/'): answer = firstVal / secondVal; break;
         }
 
+
+        this.setState({inputValues: [answer.toString()], inputGroup: 1});
         if (endEquation == true) {
-            this.setState({inputValues: [answer.toString()], inputGroup: 1});
-        } else {
-            this.setState({inputValues: [answer.toString(), operator]});
+            this.setState({answered: true, inputGroup: 0});
         }
         
         return answer.toString();
     }
 
     clearAll() {
-        this.setState({inputValues: ['0'], inputGroup: 0});
+        this.setState({inputValues: ['0'], inputGroup: 0, answered: false});
     }
 
     squareRoot() {
         let SRvalue = 0;
         if (this.state.inputGroup == 2) {
-            SRvalue = Math.sqrt(parseInt(this.calculate(true)));
+            SRvalue = Math.sqrt(parseInt(this.calculate()));
         } else {
             SRvalue = Math.sqrt(parseInt(this.state.inputValues[0]));
         }

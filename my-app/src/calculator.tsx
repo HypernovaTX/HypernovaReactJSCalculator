@@ -58,7 +58,7 @@ export class Calculator extends React.Component<Props, State> {
             }
             //add the number from the input (also make sure we don't get 000...)
             if (input != '0') {
-                if (tmpVal[tmpIndex] == '0' && input != '.') {
+                if (parseFloat(tmpVal[tmpIndex]) == 0 && input != '.') {
                     tmpVal[tmpIndex] = input;
                 } else {
                     if (input == '.' && !(tmpVal[tmpIndex].match(/\./))) {
@@ -110,24 +110,36 @@ export class Calculator extends React.Component<Props, State> {
     }
 
     squareRoot() {
-        let value = 0;
+        let SRvalue = 0;
         if (this.state.inputGroup == 2) {
-            value = Math.sqrt(parseInt(this.calculate(true)));
+            SRvalue = Math.sqrt(parseInt(this.calculate(true)));
         } else {
-            value = Math.sqrt(parseInt(this.state.inputValues[0]));
+            SRvalue = Math.sqrt(parseInt(this.state.inputValues[0]));
         }
-        this.setState({inputValues: [value.toString()]});
+        this.setState({inputValues: [SRvalue.toString()]});
     }
 
     //flip between +/-
     flipValue() { 
-        let tmp = this.state.inputValues;
-        if (this.state.inputValues[0] != "-") {
-            tmp.unshift('-');
-        } else {
-            tmp.shift();
+        let tmpValF = this.state.inputValues;
+        let tmpIndexF = this.state.inputGroup;
+        if (tmpValF[tmpIndexF] != "0") {
+            if (tmpIndexF != 1) {
+                if (tmpValF[tmpIndexF].match(/\-/)) {
+                    tmpValF[tmpIndexF] = tmpValF[tmpIndexF].replace(/\-/, '');
+                } else {
+                    tmpValF[tmpIndexF] = '-' + tmpValF[tmpIndexF];
+                }
+            }
+            else {
+                if (tmpValF[0].match(/\-/)) {
+                    tmpValF[0] = tmpValF[0].replace(/\-/, '');
+                } else {
+                    tmpValF[0] = '-' + tmpValF[0];
+                }
+            }
         }
-        this.setState({inputValues: tmp});
+        this.setState({inputValues: tmpValF});
     }
 
     renderButtons() {

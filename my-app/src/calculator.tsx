@@ -15,6 +15,11 @@ export class Calculator extends React.Component<Props, State> {
         this.renderButtons = this.renderButtons.bind(this);
         this.flipValue = this.flipValue.bind(this);
     }
+    /* To-dos (09/01/2020)
+    - Add a function to check for largest numbers with "Number.MAX_SAFE_INTEGER"
+    - Add a feature where when inputting numbers, the input will stop when it reaches the largest number
+    - If the answer is beyond the largest number, it will return as "out of bound"
+    */
 
     //main input function
     addValue(input = '1') {
@@ -142,35 +147,30 @@ export class Calculator extends React.Component<Props, State> {
     //pretty obvious
     squareRoot() {
         let SRvalue = 0;
-        if (this.state.inputGroup == 2) {
-            SRvalue = Math.sqrt(parseInt(this.calculate()));
-        } else {
-            SRvalue = Math.sqrt(parseInt(this.state.inputValues[0]));
-        }
+        SRvalue = (this.state.inputGroup == 2) ? Math.sqrt(parseInt(this.calculate())) : Math.sqrt(parseInt(this.state.inputValues[0]));
         this.setState({inputValues: [SRvalue.toString()]});
     }
 
     //flip between +/- 
-    flipValue() { 
-        let tmpValF = this.state.inputValues;
-        let tmpIndexF = this.state.inputGroup;
-        if (tmpValF[tmpIndexF] != "0") {
-            if (tmpIndexF != 1) {
-                if (tmpValF[tmpIndexF].match(/\-/)) {
-                    tmpValF[tmpIndexF] = tmpValF[tmpIndexF].replace(/\-/, '');
-                } else {
-                    tmpValF[tmpIndexF] = '-' + tmpValF[tmpIndexF];
-                }
-            }
-            else {
-                if (tmpValF[0].match(/\-/)) {
-                    tmpValF[0] = tmpValF[0].replace(/\-/, '');
-                } else {
-                    tmpValF[0] = '-' + tmpValF[0];
-                }
-            }
+    flipValue() {
+        let chk_index = this.state.inputGroup;
+        let tmp_index = (chk_index == 1) ? 0 : chk_index;
+        let map_values = this.state.inputValues; 
+        let tmp_value = map_values[tmp_index];
+        let rxp_minus = /\-/;
+        
+        function hasMinus(value = '') {
+            return value.match(rxp_minus);
         }
-        this.setState({inputValues: tmpValF});
+        function removeMinus(value = '') {
+            return value.replace(rxp_minus, '');
+        }
+
+        if (tmp_value != '0') {
+            map_values[tmp_index] = (hasMinus(tmp_value))
+                ? removeMinus(tmp_value) : `-${tmp_value}`;
+            this.setState({inputValues: map_values});
+        }
     }
 
     renderButtons() {

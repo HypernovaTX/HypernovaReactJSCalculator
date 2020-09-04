@@ -22,6 +22,7 @@ export class Calculator extends React.Component<Props, State> {
     - If the answer is beyond the largest number, it will return as "out of bound"
     - Add the lowest limit for decimals
     - DONE - Fix squareroot of NaN and negative numbers
+    - User should not be able to delete the message "ERROR" using backspace
     */
 
     //main input function

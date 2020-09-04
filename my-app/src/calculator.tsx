@@ -17,9 +17,11 @@ export class Calculator extends React.Component<Props, State> {
     }
     /* To-dos (09/01/2020)
     - DONE - Add a function to check for largest numbers with "Number.MAX_SAFE_INTEGER"
-    - Add a feature where when inputting numbers, the input will stop when it reaches the largest number
+    - DONE - Add a feature where when inputting numbers, the input will stop when it reaches the largest number
+    - DONE - Fix the bug where any number below 0.1 doesn't work
     - If the answer is beyond the largest number, it will return as "out of bound"
-    - Fix the bug where any number below 0.1 doesn't work
+    - Add the lowest limit for decimals
+    - Fix squareroot of NaN and negative numbers
     */
 
     //main input function
@@ -27,33 +29,39 @@ export class Calculator extends React.Component<Props, State> {
         const self = this;
         const rep_operator = /^[\+\-\*\/]*$/;
         const rep_decimal = /\./;
+        const calculate = () => this.calculate(false);
         let { inputGroup, inputValues, answered } = self.state;
         inputValues[inputGroup] = inputValues[inputGroup] || '';
-        
-        //critical error
-        if (answered == 2) {
-            return false;
-        }
 
         function roundStringNum(input = '') {
             return parseFloat(input).toString();
         }
 
         function addOperator(currentInput = '', lastInput = '') {
+            if (answered === 2) {
+                return;
+            }
             if (lastInput.match(rep_operator)) {
-                return currentInput;
+                inputValues[inputGroup] = currentInput;
             } else {
                 roundStringNum();
                 inputGroup ++;
-                inputValues = (inputGroup >= 3)
-                    ? [self.calculate(), currentInput, '']
-                    : [inputValues[inputGroup - 1], currentInput];
+                if (inputGroup >= 3) {
+                    inputValues = [self.calculate(false), currentInput, '']
+                    inputGroup = 1;
+                } else {
+                    inputValues = [inputValues[inputGroup - 1], currentInput];
+                }
             }
             answered = 0;
         }
 
         function addFloat(currentInput = '') {
-            if (answered == 1) {
+            if (answered === 2) {
+                return;
+            }
+
+            if (answered === 1) {
                 inputGroup = 0;
                 inputValues = ['0'];
                 answered = 0;
@@ -73,8 +81,8 @@ export class Calculator extends React.Component<Props, State> {
         }
 
         function addZero(check = inputValues[inputGroup]) {
-            if (check === '0') {
-                return false; //exit
+            if (check === '0' || answered === 2) {
+                return;
             }
             if (check.match(rep_decimal)
             || check.charAt(0) !== '0') {
@@ -83,7 +91,7 @@ export class Calculator extends React.Component<Props, State> {
         }
 
         function addDecimal(check = inputValues[inputGroup]) {
-            if (!check.match(rep_decimal)) {
+            if (!check.match(rep_decimal) && answered !== 2) {
                 inputValues[inputGroup] += '.';
             }
         }
@@ -151,7 +159,7 @@ export class Calculator extends React.Component<Props, State> {
         
         inputValues = [output];
         inputGroup = 1;
-        if (endEquation == true) {
+        if (endEquation == true && answered == 0) {
             answered = 1;
             inputGroup = 0;
         }

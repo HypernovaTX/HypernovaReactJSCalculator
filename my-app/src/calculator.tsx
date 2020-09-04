@@ -22,7 +22,7 @@ export class Calculator extends React.Component<Props, State> {
     - If the answer is beyond the largest number, it will return as "out of bound"
     - Add the lowest limit for decimals
     - DONE - Fix squareroot of NaN and negative numbers
-    - User should not be able to delete the message "ERROR" using backspace
+    - DONE - User should not be able to delete the message "ERROR" using backspace
     */
 
     //main input function
@@ -171,17 +171,19 @@ export class Calculator extends React.Component<Props, State> {
 
     //when "<x|" is pressed
     deleteValues() {
-        let tmpIndexD = this.state.inputGroup;
-        let tmpValD = this.state.inputValues;
-        if (tmpValD[tmpIndexD] == '') {
-            tmpIndexD -= 1;
+        let { inputGroup, inputValues, answered } = this.state;
+        if (answered === 2) {
+            return;
         }
-        if (tmpIndexD >= 0) {
-            tmpValD[tmpIndexD] = tmpValD[tmpIndexD].slice(0, -1);
-            if (tmpValD[0] == '') {
-                tmpValD[0] = '0';
+        if (inputValues[inputGroup] == '') {
+            inputGroup -= 1;
+        }
+        if (inputGroup >= 0) {
+            inputValues[inputGroup] = inputValues[inputGroup].slice(0, -1);
+            if (inputValues[0] == '') {
+                inputValues[0] = '0';
             }
-            this.setState({ inputValues: tmpValD, inputGroup: tmpIndexD });
+            this.setState({ inputValues, inputGroup });
         }
     }
 
@@ -207,11 +209,11 @@ export class Calculator extends React.Component<Props, State> {
 
     //flip between +/- 
     flipValue() {
-        const { inputGroup, inputValues } = this.state;
+        const { inputGroup, inputValues, answered } = this.state;
         const index = (inputGroup == 1) ? 0 : inputGroup;
         const value = parseFloat(inputValues[index]);
 
-        inputValues[index] = `${-1 * value}`;
+        inputValues[index] = (answered === 2) ? inputValues[index] : `${-1 * value}`;
         this.setState({ inputValues });
     }
 

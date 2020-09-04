@@ -21,7 +21,7 @@ export class Calculator extends React.Component<Props, State> {
     - DONE - Fix the bug where any number below 0.1 doesn't work
     - If the answer is beyond the largest number, it will return as "out of bound"
     - Add the lowest limit for decimals
-    - Fix squareroot of NaN and negative numbers
+    - DONE - Fix squareroot of NaN and negative numbers
     */
 
     //main input function
@@ -145,7 +145,7 @@ export class Calculator extends React.Component<Props, State> {
                     solution = value_1 / value_2;
                 } else {
                     solution = NaN;
-                    output = "WHY?! :(";
+                    output = "ERROR";
                     answered = 2;
                 }
                 break;
@@ -191,9 +191,17 @@ export class Calculator extends React.Component<Props, State> {
 
     //pretty obvious
     squareRoot() {
-        let SRvalue = 0;
-        SRvalue = (this.state.inputGroup == 2) ? Math.sqrt(parseInt(this.calculate())) : Math.sqrt(parseInt(this.state.inputValues[0]));
-        this.setState({ inputValues: [SRvalue.toString()] });
+        let { inputValues, inputGroup, answered } = this.state;
+        let solution = 0;
+        solution = parseInt((inputGroup === 2) ? this.calculate() : inputValues[0]);
+        if (solution < 0 || answered === 2) {
+            answered = 2;
+            inputValues = ["ERROR"];
+        } else {
+            answered = 1;
+            inputValues = [Math.sqrt(solution).toString()];
+        }
+        this.setState({ inputValues, inputGroup, answered });
     }
 
     //flip between +/- 

@@ -2,125 +2,162 @@ import React, { useState } from 'react';
 import { stringify } from 'querystring';
 import { exit } from 'process';
 type Props = {showDisplay: boolean};
-type State = {inputValues: string[], inputGroup: number, answered: boolean};
+type State = {inputValues: string[], inputGroup: number, answered: number};
 export class Calculator extends React.Component<Props, State> {
     constructor(p: Props) {
         super(p);
         this.state = {
             inputValues: ['0'],
             inputGroup: 0,
-            answered: false
+            answered: 0 //0 - false, 1 - true, 2 - alt true
         }
         this.addValue = this.addValue.bind(this);
         this.renderButtons = this.renderButtons.bind(this);
         this.flipValue = this.flipValue.bind(this);
     }
     /* To-dos (09/01/2020)
-    - Add a function to check for largest numbers with "Number.MAX_SAFE_INTEGER"
+    - DONE - Add a function to check for largest numbers with "Number.MAX_SAFE_INTEGER"
     - Add a feature where when inputting numbers, the input will stop when it reaches the largest number
     - If the answer is beyond the largest number, it will return as "out of bound"
+    - Fix the bug where any number below 0.1 doesn't work
     */
 
     //main input function
     addValue(input = '1') {
-        let tmpIndex = this.state.inputGroup;
-        let tmpVal = this.state.inputValues;
-        if (tmpVal[tmpIndex] == undefined) {
-            tmpVal[tmpIndex] = '';
+        const self = this;
+        const rep_operator = /^[\+\-\*\/]*$/;
+        const rep_decimal = /\./;
+        let { inputGroup, inputValues, answered } = self.state;
+        inputValues[inputGroup] = inputValues[inputGroup] || '';
+        
+        //critical error
+        if (answered == 2) {
+            return false;
         }
 
-        //SPECIAL PURPOSE INPUTS
-        if (input == '±') {
-            this.flipValue();
+        function roundStringNum(input = '') {
+            return parseFloat(input).toString();
         }
-        
-        //---- Handles the format ----//
-        //If it's an operator: + - * /
-        if (input.match(/^[\+\-\*\/]*$/)) {
-            //previous input is an operator
-            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/)) { 
-                tmpVal[tmpIndex] = input;
-            }
-            //previous input is NOT an operator
-            else { 
-                let roundNum = parseFloat(tmpVal[tmpIndex]);
-                tmpVal[tmpIndex] = roundNum.toString(); //need to round the numbers (to prevent something like: "x.000...")
-                tmpIndex ++;
-                if (tmpIndex >= 3) {
-                    tmpVal[0] = this.calculate();
-                    tmpVal[1] = input;
-                    tmpVal[2] = '';
-                    tmpIndex = 1;
-                } else {
-                    tmpVal[tmpIndex] = input;
-                }
-            }
 
-            this.setState({answered: false});
+        function addOperator(currentInput = '', lastInput = '') {
+            if (lastInput.match(rep_operator)) {
+                return currentInput;
+            } else {
+                roundStringNum();
+                inputGroup ++;
+                inputValues = (inputGroup >= 3)
+                    ? [self.calculate(), currentInput, '']
+                    : [inputValues[inputGroup - 1], currentInput];
+            }
+            answered = 0;
         }
-        //NOT an operator (numbers, decimals)
-        else {
-            //overwrite last answered equation
-            //console.log("IsAnswered = " + this.state.answered.toString()); //debug use
-            if (this.state.answered == true) {
-                this.clearAll();
-                tmpIndex = 0;
-                tmpVal = [''];
+
+        function addFloat(currentInput = '') {
+            if (answered == 1) {
+                inputGroup = 0;
+                inputValues = ['0'];
+                answered = 0;
+                console.log(self.clearAll);
             }
-            //reformat a new set of numbers if the previous input is an operator
-            if (tmpVal[tmpIndex].match(/^[\+\-\*\/]*$/) && tmpVal[tmpIndex] != '') {
-                tmpIndex ++;
-                tmpVal[tmpIndex] = '';
+            if (inputValues[inputGroup].match(rep_operator) && inputValues[inputGroup] !== '') {
+                inputGroup ++;
+                inputValues[inputGroup] = '';
             }
-            //add the number from the input (also make sure we don't get 000...)
-            if (input != '0') {
-                if (parseFloat(tmpVal[tmpIndex]) == 0 && tmpVal[tmpIndex] != "0." && input != '.') {
-                    tmpVal[tmpIndex] = input;
-                } else {
-                    if (input == '.' && !(tmpVal[tmpIndex].match(/\./))) {
-                        tmpVal[tmpIndex] += input;
-                    }
-                    else if (input != '.') {
-                        tmpVal[tmpIndex] += input;
-                    }
-                }
-            } else if (input == '0' && (tmpVal[tmpIndex].match(/\./) || tmpVal[tmpIndex] == '' || tmpVal[tmpIndex] != '0')) {
-                tmpVal[tmpIndex] += input;
+            if (currentInput === '0') {
+                addZero();
+            } else if (currentInput.match(rep_decimal)) {
+                addDecimal();
+            } else {
+                addNumber(currentInput);
             }
+        }
+
+        function addZero(check = inputValues[inputGroup]) {
+            if (check === '0') {
+                return false; //exit
+            }
+            if (check.match(rep_decimal)
+            || check.charAt(0) !== '0') {
+                inputValues[inputGroup] += '0';
+            }
+        }
+
+        function addDecimal(check = inputValues[inputGroup]) {
+            if (!check.match(rep_decimal)) {
+                inputValues[inputGroup] += '.';
+            }
+        }
+
+        function addNumber(currentInput = '', check = inputValues[inputGroup]) {
+            if (check === '0' || check === '') {
+                inputValues[inputGroup] = '';
+            }
+            if (inputValues[inputGroup].length < 14) {
+                inputValues[inputGroup] += currentInput;
+            }
+        }
+
+        //ADD
+        if (input.match(rep_operator)) {
+            addOperator(input, inputValues[inputGroup]);
+        } else {
+            addFloat(input);
         }
         
-        //tmpVal.push(input); //old method to insert inputs into array
-        this.setState({inputValues: tmpVal, inputGroup: tmpIndex});
+        this.setState({ inputValues, inputGroup, answered });
     }
 
+    //Ensure the input does not exceed the max number
+    trimNum(input = '0') {
+        return Math.min(parseFloat(input), 99999999999999);
+    }
+
+    //self explainatory function
     calculate(endEquation = false) {
-        let firstVal = parseFloat(this.state.inputValues[0]);
-        let numOperator = this.state.inputValues[1];
-        let secondVal = parseFloat(this.state.inputValues[2]);
-        let answer = 0;
+        let { inputValues, inputGroup, answered } = this.state;
+        const value_1 = parseFloat(inputValues[0]);
+        const operator = inputValues[1];
+        const value_2 = parseFloat(inputValues[2]);
+        let solution = 0;
+        let output = '';
         
         //Prevent multi "=" button bug
-        //console.log('2ndval = ' + secondVal); //debug purpose
-        if (secondVal.toString() == 'NaN') {
-            this.setState({inputValues: [firstVal.toString()]});
-            return this.state.inputValues[0];
+        if (Number.isNaN(value_2)) {
+            this.setState({ inputValues });
+            return inputValues[0];
         }
 
         //do the calculation
-        switch (numOperator) {
-            case ('+'): answer = firstVal + secondVal; break;
-            case ('-'): answer = firstVal - secondVal; break;
-            case ('*'): answer = firstVal * secondVal; break;
-            case ('/'): answer = firstVal / secondVal; break;
+        switch (operator) {
+            case ('+'): solution = value_1 + value_2; break;
+            case ('-'): solution = value_1 - value_2; break;
+            case ('*'): solution = value_1 * value_2; break;
+            case ('/'): {
+                if (value_2 !== 0) {
+                    solution = value_1 / value_2;
+                } else {
+                    solution = NaN;
+                    output = "WHY?! :(";
+                    answered = 2;
+                }
+                break;
+            }
         }
 
-
-        this.setState({inputValues: [answer.toString()], inputGroup: 1});
-        if (endEquation == true) {
-            this.setState({answered: true, inputGroup: 0});
+        //prevent the number exceeding the safe integer territory
+        if (!Number.isNaN(solution)) {
+            output = (solution > Number.MAX_SAFE_INTEGER) ? "Out of Bound" : solution.toString();
         }
         
-        return answer.toString();
+        inputValues = [output];
+        inputGroup = 1;
+        if (endEquation == true) {
+            answered = 1;
+            inputGroup = 0;
+        }
+        this.setState({ inputValues, inputGroup, answered });
+        
+        return output;
     }
 
     //when "<x|" is pressed
@@ -135,42 +172,30 @@ export class Calculator extends React.Component<Props, State> {
             if (tmpValD[0] == '') {
                 tmpValD[0] = '0';
             }
-            this.setState({inputValues: tmpValD, inputGroup: tmpIndexD});
+            this.setState({ inputValues: tmpValD, inputGroup: tmpIndexD });
         }
     }
 
     //When "C" is pressed
     clearAll() {
-        this.setState({inputValues: ['0'], inputGroup: 0, answered: false});
+        this.setState({ inputValues: ['0'], inputGroup: 0, answered: 0 });
     }
 
     //pretty obvious
     squareRoot() {
         let SRvalue = 0;
         SRvalue = (this.state.inputGroup == 2) ? Math.sqrt(parseInt(this.calculate())) : Math.sqrt(parseInt(this.state.inputValues[0]));
-        this.setState({inputValues: [SRvalue.toString()]});
+        this.setState({ inputValues: [SRvalue.toString()] });
     }
 
     //flip between +/- 
     flipValue() {
-        let chk_index = this.state.inputGroup;
-        let tmp_index = (chk_index == 1) ? 0 : chk_index;
-        let map_values = this.state.inputValues; 
-        let tmp_value = map_values[tmp_index];
-        let rxp_minus = /\-/;
-        
-        function hasMinus(value = '') {
-            return value.match(rxp_minus);
-        }
-        function removeMinus(value = '') {
-            return value.replace(rxp_minus, '');
-        }
+        const { inputGroup, inputValues } = this.state;
+        const index = (inputGroup == 1) ? 0 : inputGroup;
+        const value = parseFloat(inputValues[index]);
 
-        if (tmp_value != '0') {
-            map_values[tmp_index] = (hasMinus(tmp_value))
-                ? removeMinus(tmp_value) : `-${tmp_value}`;
-            this.setState({inputValues: map_values});
-        }
+        inputValues[index] = `${-1 * value}`;
+        this.setState({ inputValues });
     }
 
     renderButtons() {
@@ -185,11 +210,6 @@ export class Calculator extends React.Component<Props, State> {
                 case ('√'): contentResult.push(<div className='calc-button' onClick={() => this.squareRoot()}>{element}</div>); break;
                 case ('⌫'): contentResult.push(<div className='calc-button' onClick={() => this.deleteValues()}>{element}</div>); break;
                 default: contentResult.push(<div className='calc-button' onClick={() => this.addValue(element)}>{element}</div>); break;
-            }
-            if (element != '') {
-                
-            } else {
-                
             }
         }
         return contentResult;

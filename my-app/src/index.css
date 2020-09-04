@@ -23,6 +23,12 @@ code {
   text-align: right;
 }
 
+.calc-display-text {
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 2px 2px 2px 2px;
+}
+
 .calc-keypad {
   height: calc(100% - 2.5em);
   border-top: 1px solid #000;

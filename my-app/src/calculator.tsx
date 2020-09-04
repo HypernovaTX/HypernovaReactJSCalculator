@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { stringify } from 'querystring';
-import { exit } from 'process';
+import { exit, nextTick } from 'process';
 type Props = {showDisplay: boolean};
 type State = {inputValues: string[], inputGroup: number, answered: number};
 export class Calculator extends React.Component<Props, State> {
@@ -233,10 +233,31 @@ export class Calculator extends React.Component<Props, State> {
         }
         return contentResult;
     }
+
+    formatNumbers() {
+        const { inputValues } = this.state;
+        const options = { 
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2 
+        };
+        const rep_negative = /\-\d*(\.?\d+)/;
+        let contentResult: JSX.Element[] = [];
+        inputValues.forEach((getNum, index) => {
+            let formatted = Number(getNum).toLocaleString('en');
+            if (index == 1) {
+                formatted = getNum; //if this is an operator
+            } else if (formatted.match(rep_negative)) {
+                formatted = `(${formatted})`;
+            }
+            contentResult.push(<span className="calc-display-text">{formatted}</span>);
+        });
+        return contentResult;
+    }
     
     render() {
+        const calcAnswer = this.formatNumbers(); //this.state.inputValues.join('');
         let display = <React.Fragment/>;
-        let calcAnswer = this.state.inputValues.join('');
+        
 
         if (this.props.showDisplay) {
             display = <div className='calc-display'>

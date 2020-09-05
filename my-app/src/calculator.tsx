@@ -3,6 +3,7 @@ import { stringify } from 'querystring';
 import { exit, nextTick } from 'process';
 type Props = {showDisplay: boolean};
 type State = {inputValues: string[], inputGroup: number, answered: number};
+
 export class Calculator extends React.Component<Props, State> {
     constructor(p: Props) {
         super(p);

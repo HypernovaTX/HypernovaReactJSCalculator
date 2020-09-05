@@ -15,27 +15,17 @@ export class Calculator extends React.Component<Props, State> {
         this.renderButtons = this.renderButtons.bind(this);
         this.flipValue = this.flipValue.bind(this);
     }
-    /* To-dos (09/01/2020)
-    - DONE - Add a function to check for largest numbers with "Number.MAX_SAFE_INTEGER"
-    - DONE - Add a feature where when inputting numbers, the input will stop when it reaches the largest number
-    - DONE - Fix the bug where any number below 0.1 doesn't work
-    - If the answer is beyond the largest number, it will return as "out of bound"
-    - Add the lowest limit for decimals
-    - DONE - Fix squareroot of NaN and negative numbers
-    - DONE - User should not be able to delete the message "ERROR" using backspace
-    */
 
     //main input function
     addValue(input = '1') {
         const self = this;
         const rep_operator = /^[\+\-\*\/]*$/;
         const rep_decimal = /\./;
-        const calculate = () => this.calculate(false);
         let { inputGroup, inputValues, answered } = self.state;
         inputValues[inputGroup] = inputValues[inputGroup] || '';
 
         function roundStringNum(input = '') {
-            return parseFloat(input).toString();
+            return parseFloat(input).toFixed(12).toString();
         }
 
         function addOperator(currentInput = '', lastInput = '') {
@@ -116,9 +106,18 @@ export class Calculator extends React.Component<Props, State> {
         this.setState({ inputValues, inputGroup, answered });
     }
 
-    //Ensure the input does not exceed the max number
-    trimNum(input = '0') {
-        return Math.min(parseFloat(input), 99999999999999);
+    //Check and see the input does not exceed the min/max number
+    filterMinMax(input = '0') {
+        let getFloat = parseFloat(input);
+        const decimals = input.split('.')[1].length || 0;
+        if (getFloat < 0.000000000001) {
+            return '0';
+        }
+        if (getFloat >= Number.MAX_SAFE_INTEGER) {
+            this.setState({ answered: 2 });
+            return 'OUT OF BOUND';
+        }
+        return getFloat.toFixed(decimals).toString();
     }
 
     //self explainatory function
@@ -155,7 +154,7 @@ export class Calculator extends React.Component<Props, State> {
 
         //prevent the number exceeding the safe integer territory
         if (!Number.isNaN(solution)) {
-            output = (solution > Number.MAX_SAFE_INTEGER) ? "Out of Bound" : solution.toString();
+            output = this.filterMinMax(solution.toString()); //(solution > Number.MAX_SAFE_INTEGER) ? "Out of Bound" : solution.toString();
         }
         
         inputValues = [output];
@@ -236,16 +235,26 @@ export class Calculator extends React.Component<Props, State> {
 
     formatNumbers() {
         const { inputValues } = this.state;
-        const options = { 
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2 
-        };
         const rep_negative = /\-\d*(\.?\d+)/;
+        const rep_decimal = /\./;
         let contentResult: JSX.Element[] = [];
-        inputValues.forEach((getNum, index) => {
-            let formatted = Number(getNum).toLocaleString('en');
+
+        function formatThousands(input = '0') {
+            const explode = input.split('.')[1] || '';
+            let specialDecimal = '';
+            if (input.match(rep_decimal) && explode.length === 0) {
+                specialDecimal = '.';
+            }
+            const options = { 
+                minimumFractionDigits: explode.length
+            };
+            return input.replace(/\B(?=(\d{3})+(?!\d))/g, " ");//Number(input).toLocaleString('en', options) + specialDecimal;
+        }
+
+        inputValues.forEach((getValue, index) => {
+            let formatted = formatThousands(getValue);
             if (index == 1) {
-                formatted = getNum; //if this is an operator
+                formatted = getValue; //if this is an operator
             } else if (formatted.match(rep_negative)) {
                 formatted = `(${formatted})`;
             }
@@ -255,7 +264,7 @@ export class Calculator extends React.Component<Props, State> {
     }
     
     render() {
-        const calcAnswer = this.formatNumbers(); //this.state.inputValues.join('');
+        const calcAnswer = this.formatNumbers(); //this.state.inputValues.join(''); //
         let display = <React.Fragment/>;
         
 

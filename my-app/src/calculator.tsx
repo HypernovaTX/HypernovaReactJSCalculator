@@ -109,8 +109,12 @@ export class Calculator extends React.Component<Props, State> {
 
     //Check and see the input does not exceed the min/max number
     filterMinMax(input = '0') {
+        const { answered } = this.state;
         let getFloat = parseFloat(input);
-        const decimals = input.split('.')[1].length || 0;
+        let decimals = 0;
+        if (input.match(/\./)) {
+            decimals = input.split('.')[1].length || 0;
+        }
         if (getFloat < 0.000000000001) {
             return '0';
         }

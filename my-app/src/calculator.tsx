@@ -19,7 +19,7 @@ export class Calculator extends React.Component<Props, State> {
         this.state = {
             inputValues: ['0'],
             inputGroup: 0,
-            answered: 0, //0 - false, 1 - true, 2 - alt true
+            answered: 0, //0 - false, 1 - true, 2 - ERROR
             fontSize: 32,
             fontPadding: 4
         }
@@ -34,6 +34,7 @@ export class Calculator extends React.Component<Props, State> {
         this.formatThousands = this.formatThousands.bind(this);
         this.formatNumbers = this.formatNumbers.bind(this);
         this.renderButtons = this.renderButtons.bind(this);
+        this.adjustFontSize = this.adjustFontSize.bind(this);
 
         this.calcDisplayOuter = React.createRef();
     }
@@ -309,8 +310,6 @@ export class Calculator extends React.Component<Props, State> {
         return contentResult;
     }
 
-    
-
     formatNumbers() {
         const { inputValues, fontPadding } = this.state;
         const rep_negative = /\-\d*(\.?\d+)/;
@@ -369,21 +368,15 @@ export class Calculator extends React.Component<Props, State> {
 
         textWidth = inputValuesWidth(fontSize);
 
-        console.log('display outer - ' + outerWidth);
-        console.log('text width - ' + textWidth);
-
         if (inputValuesWidth(testSize) <= outerWidth) {
             fontSize = 32;
             this.setState({ fontSize });
-            console.log('GENERAL text length is smaller than display');
         }
         while (inputValuesWidth(testSize) > outerWidth) {
             testSize --;
-            console.log('Current text length is smaller than display');
         }
         while (inputValuesWidth(testSize) < outerWidth && testSize < 32) {
             testSize ++;
-            console.log('Text length is LARGER than display');
         }
         fontSize = testSize;
         

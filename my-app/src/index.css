@@ -23,16 +23,13 @@ code {
   text-align: right;
 }
 #calc-display {
-  font-size: 32px;
-  float: left;
-  text-align: right;
-  width: 100%;
+  display: flex;
+  float: right;
+  height: 100%;
 }
-
-.calc-display-text {
-  margin-left: 4px;
-  margin-right: 4px;
-  padding: 2px 2px 2px 2px;
+#calc-display-inner {
+  text-align: right;
+  height: fit-content;
 }
 
 .calc-keypad {

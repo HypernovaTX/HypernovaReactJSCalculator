@@ -17,9 +17,9 @@ test('Filter the inputs properly', () => {
     });
 });
 
-test('Calculate 9 x 9', () => {
+/*test('Calculate 9 x 9', () => {
     calc.setState({ inputValues: ['9', '*', '9'], inputGroup: 2});
     const results = '81';
     const test = calc.calculate(false);
     expect(test).toBe(results);
-});
+});*/

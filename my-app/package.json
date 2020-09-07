@@ -13,6 +13,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",
+    "text-metrics": "^2.0.2",
     "typescript": "^3.9.7"
   },
   "scripts": {

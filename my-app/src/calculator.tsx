@@ -1,21 +1,43 @@
-import React from 'react'; //, { useState }
+import React, { ReactDOM } from 'react'; //, { useState }
+import { isNull, isUndefined } from 'util';
+import { exit } from 'process';
+const textMetrics = require('text-metrics');
 //import { stringify } from 'querystring';
 //import { exit, nextTick } from 'process';
 type Props = {showDisplay: boolean};
-type State = {inputValues: string[], inputGroup: number, answered: number};
+type State = {
+    inputValues: string[],
+    inputGroup: number,
+    answered: number,
+    fontSize: number,
+    fontPadding: number
+};
 
 export class Calculator extends React.Component<Props, State> {
+    private calcDisplayOuter: React.RefObject<HTMLDivElement>;
+
     constructor(p: Props) {
         super(p);
         this.state = {
             inputValues: ['0'],
             inputGroup: 0,
-            answered: 0 //0 - false, 1 - true, 2 - alt true
+            answered: 0, //0 - false, 1 - true, 2 - alt true
+            fontSize: 32,
+            fontPadding: 4
         }
+
         this.addValue = this.addValue.bind(this);
-        this.renderButtons = this.renderButtons.bind(this);
-        this.flipValue = this.flipValue.bind(this);
         this.filterMinMax = this.filterMinMax.bind(this);
+        this.calculate = this.calculate.bind(this);
+        this.deleteValues = this.deleteValues.bind(this);
+        this.clearAll = this.clearAll.bind(this);
+        this.squareRoot = this.squareRoot.bind(this);
+        this.flipValue = this.flipValue.bind(this);
+        this.formatThousands = this.formatThousands.bind(this);
+        this.formatNumbers = this.formatNumbers.bind(this);
+        this.renderButtons = this.renderButtons.bind(this);
+
+        this.calcDisplayOuter = React.createRef();
     }
 
     //main input function
@@ -106,6 +128,9 @@ export class Calculator extends React.Component<Props, State> {
         }
         
         this.setState({ inputValues, inputGroup, answered });
+        if (inputValues[inputGroup].length < 14) {
+            this.adjustFontSize();
+        }
     }
 
     //Check and see the input does not exceed the min/max number
@@ -169,7 +194,8 @@ export class Calculator extends React.Component<Props, State> {
             inputGroup = 0;
         }
         this.setState({ inputValues, inputGroup, answered });
-        
+        this.adjustFontSize();
+
         return output;
     }
 
@@ -189,11 +215,12 @@ export class Calculator extends React.Component<Props, State> {
             }
             this.setState({ inputValues, inputGroup });
         }
+        this.adjustFontSize();
     }
 
     //When "C" is pressed
     clearAll() {
-        this.setState({ inputValues: ['0'], inputGroup: 0, answered: 0 });
+        this.setState({ inputValues: ['0'], inputGroup: 0, answered: 0 , fontSize: 32});
     }
 
     //pretty obvious
@@ -222,70 +249,162 @@ export class Calculator extends React.Component<Props, State> {
         this.setState({ inputValues });
     }
 
+    formatThousands(input = '0') {
+        const firstHalf = input.split('.')[0] || input;
+        const secondHalf = input.split('.')[1] || '';
+        const rep_decimal = /\./;
+        let pointDecimal = '';
+        if (input.match(rep_decimal)) {
+            pointDecimal = '.';
+        }
+        return firstHalf.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + pointDecimal + secondHalf;//Number(input).toLocaleString('en', options) + specialDecimal;
+    }
+
     renderButtons() {
         const buttonContent = 'C⌫√+789-456*123/±0.=';
         let contentResult = [];
         for (let i = 0; i < buttonContent.length; i++) {
             const element = buttonContent.charAt(i);
             switch (element) {
-                case ('C'): contentResult.push(<div className='calc-button' onClick={() => this.clearAll()}>{element}</div>); break;
-                case ('='): contentResult.push(<div className='calc-button' onClick={() => this.calculate(true)}>{element}</div>); break;
-                case ('±'): contentResult.push(<div className='calc-button' onClick={() => this.flipValue()}>{element}</div>); break;
-                case ('√'): contentResult.push(<div className='calc-button' onClick={() => this.squareRoot()}>{element}</div>); break;
-                case ('⌫'): contentResult.push(<div className='calc-button' onClick={() => this.deleteValues()}>{element}</div>); break;
-                default: contentResult.push(<div className='calc-button' onClick={() => this.addValue(element)}>{element}</div>); break;
+                case ('C'):
+                    contentResult.push(
+                    <div className='calc-button' key={'calc-button-' + element} onClick={() => this.clearAll()}>
+                        {element}
+                    </div>);
+                    break;
+                case ('='):
+                    contentResult.push(
+                    <div className='calc-button' key={'calc-button-' + element} onClick={() => this.calculate(true)}>
+                        {element}
+                    </div>);
+                    break;
+                case ('±'):
+                    contentResult.push(
+                    <div className='calc-button' key={'calc-button-flip'} onClick={() => this.flipValue()}>
+                        {element}
+                    </div>);
+                    break;
+                case ('√'):
+                    contentResult.push(
+                    <div className='calc-button' key={'calc-button-sqr' + element} onClick={() => this.squareRoot()}>
+                        {element}
+                    </div>);
+                    break;
+                case ('⌫'):
+                    contentResult.push(
+                    <div className='calc-button' key={'calc-button-del'} onClick={() => this.deleteValues()}>
+                        {element}
+                    </div>);
+                    break;
+                default:
+                    contentResult.push(
+                    <div className='calc-button' key={'calc-button-' + element} onClick={() => this.addValue(element)}>
+                        {element}
+                    </div>);
+                    break;
             }
         }
         return contentResult;
     }
 
+    
+
     formatNumbers() {
-        const { inputValues } = this.state;
+        const { inputValues, fontPadding } = this.state;
         const rep_negative = /\-\d*(\.?\d+)/;
-        const rep_decimal = /\./;
+        const spanStyle = {
+            paddingLeft: fontPadding,
+            paddingRight: fontPadding
+        }
         let contentResult: JSX.Element[] = [];
 
-        function formatThousands(input = '0') {
-            const firstHalf = input.split('.')[0] || input;
-            const secondHalf = input.split('.')[1] || '';
-            let pointDecimal = '';
-            if (input.match(rep_decimal)) {
-                pointDecimal = '.';
-            }
-            return firstHalf.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + pointDecimal + secondHalf;//Number(input).toLocaleString('en', options) + specialDecimal;
-        }
-
         inputValues.forEach((getValue, index) => {
-            let formatted = formatThousands(getValue);
+            let formatted = this.formatThousands(getValue);
             if (index === 1) {
                 formatted = getValue; //if this is an operator
             } else if (formatted.match(rep_negative)) {
                 formatted = `(${formatted})`;
             }
-            contentResult.push(<span className="calc-display-text">{formatted}</span>);
+            contentResult.push(
+                <span className="calc-display-text" key={formatted + index.toString()} style={spanStyle}>
+                    {formatted}
+                </span>
+            );
         });
         return contentResult;
+    }
+
+    adjustFontSize() {
+        let { fontSize, inputValues , fontPadding} = this.state;
+        let textWidth = 0;
+        let testSize = fontSize;
+        const self = this;
+        const outerWidth = this.calcDisplayOuter.current?.clientWidth || 0;
+
+        function get_tex_width(txt = '', font='') {
+            let element = document.createElement('canvas');
+            let context = element.getContext("2d");
+            if (!isNull(context)) {
+                context.font = font;
+                return context.measureText(txt).width;
+            } else {
+                return 0;
+            }
+        }
+
+        function inputValuesWidth(size = 32) {
+            let outputWidth = 0;
+            inputValues.forEach((value) => {
+                outputWidth += get_tex_width(
+                    self.formatThousands(value),
+                    size.toString() + "px 'Segoe UI'"
+                );
+                outputWidth += fontPadding * 2;
+            });
+            return outputWidth;
+        }
+
+        textWidth = inputValuesWidth(fontSize);
+
+        console.log('display outer - ' + outerWidth);
+        console.log('text width - ' + textWidth);
+
+        while (inputValuesWidth(testSize) > outerWidth) {
+            testSize -= 1;
+        }
+        fontSize = testSize;
+        if (inputValuesWidth(32) <= outerWidth) {
+            fontSize = 32;
+            this.setState({ fontSize });
+        }
+        this.setState({ fontSize });
     }
     
     render() {
         //const calcAnswer = this.state.inputValues.join('');
         let display = <React.Fragment/>;
+        
+        const styleDisplayFont = {
+            fontSize: this.state.fontSize.toString() + 'px'
+        }
 
         if (this.props.showDisplay) {
-            display = <div id = 'calc-display-outer'>
-                <div id = 'calc-display'>
-                    {this.formatNumbers()}
+            display = <div id='calc-display-outer' key='calcDisplayOuter' ref={this.calcDisplayOuter}>
+                <div id='calc-display' key='calcDisplay'>
+                    <div id='calc-display-inner' key='calcDisplayInner' style={styleDisplayFont}>
+                        { this.formatNumbers() }
+                    </div>
                 </div>
             </div>;
         }
+
         return ( //insert table between <div>
-            <div className = 'calc-body'>
+            <div className='calc-body' key='calcMainBody'>
                 {display}
-                <div className = 'calc-keypad'>
+                <div className='calc-keypad' key='calcKeyBody'>
                     {this.renderButtons()}
                 </div>
-                
             </div>
-        ); //<script src='./calcDisplay.js'></script> - DOESNT WORK
+        );
     }
 }

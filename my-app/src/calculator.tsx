@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { stringify } from 'querystring';
-import { exit, nextTick } from 'process';
+import React from 'react'; //, { useState }
+//import { stringify } from 'querystring';
+//import { exit, nextTick } from 'process';
 type Props = {showDisplay: boolean};
 type State = {inputValues: string[], inputGroup: number, answered: number};
 
@@ -15,6 +15,7 @@ export class Calculator extends React.Component<Props, State> {
         this.addValue = this.addValue.bind(this);
         this.renderButtons = this.renderButtons.bind(this);
         this.flipValue = this.flipValue.bind(this);
+        this.filterMinMax = this.filterMinMax.bind(this);
     }
 
     //main input function
@@ -109,13 +110,12 @@ export class Calculator extends React.Component<Props, State> {
 
     //Check and see the input does not exceed the min/max number
     filterMinMax(input = '0') {
-        const { answered } = this.state;
         let getFloat = parseFloat(input);
         let decimals = 0;
         if (input.match(/\./)) {
-            decimals = input.split('.')[1].length || 0;
+            decimals = Math.min(10, input.split('.')[1].length) || 0;
         }
-        if (getFloat < 0.000000000001) {
+        if (getFloat < 0.0000000001) {
             return '0';
         }
         if (getFloat >= Number.MAX_SAFE_INTEGER) {
@@ -164,7 +164,7 @@ export class Calculator extends React.Component<Props, State> {
         
         inputValues = [output];
         inputGroup = 1;
-        if (endEquation == true && answered == 0) {
+        if (endEquation === true && answered === 0) {
             answered = 1;
             inputGroup = 0;
         }
@@ -179,12 +179,12 @@ export class Calculator extends React.Component<Props, State> {
         if (answered === 2) {
             return;
         }
-        if (inputValues[inputGroup] == '') {
+        if (inputValues[inputGroup] === '') {
             inputGroup -= 1;
         }
         if (inputGroup >= 0) {
             inputValues[inputGroup] = inputValues[inputGroup].slice(0, -1);
-            if (inputValues[0] == '') {
+            if (inputValues[0] === '') {
                 inputValues[0] = '0';
             }
             this.setState({ inputValues, inputGroup });
@@ -200,13 +200,14 @@ export class Calculator extends React.Component<Props, State> {
     squareRoot() {
         let { inputValues, inputGroup, answered } = this.state;
         let solution = 0;
-        solution = parseInt((inputGroup === 2) ? this.calculate() : inputValues[0]);
+        solution = parseFloat((inputGroup === 2) ? this.calculate(false) : inputValues[0]);
         if (solution < 0 || answered === 2) {
             answered = 2;
             inputValues = ["ERROR"];
         } else {
             answered = 1;
-            inputValues = [Math.sqrt(solution).toString()];
+            let rawOutput = this.filterMinMax(Math.sqrt(solution).toString());
+            inputValues = [rawOutput];
         }
         this.setState({ inputValues, inputGroup, answered });
     }
@@ -214,7 +215,7 @@ export class Calculator extends React.Component<Props, State> {
     //flip between +/- 
     flipValue() {
         const { inputGroup, inputValues, answered } = this.state;
-        const index = (inputGroup == 1) ? 0 : inputGroup;
+        const index = (inputGroup === 1) ? 0 : inputGroup;
         const value = parseFloat(inputValues[index]);
 
         inputValues[index] = (answered === 2) ? inputValues[index] : `${-1 * value}`;
@@ -245,20 +246,18 @@ export class Calculator extends React.Component<Props, State> {
         let contentResult: JSX.Element[] = [];
 
         function formatThousands(input = '0') {
-            const explode = input.split('.')[1] || '';
-            let specialDecimal = '';
-            if (input.match(rep_decimal) && explode.length === 0) {
-                specialDecimal = '.';
+            const firstHalf = input.split('.')[0] || input;
+            const secondHalf = input.split('.')[1] || '';
+            let pointDecimal = '';
+            if (input.match(rep_decimal)) {
+                pointDecimal = '.';
             }
-            const options = { 
-                minimumFractionDigits: explode.length
-            };
-            return input.replace(/\B(?=(\d{3})+(?!\d))/g, " ");//Number(input).toLocaleString('en', options) + specialDecimal;
+            return firstHalf.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + pointDecimal + secondHalf;//Number(input).toLocaleString('en', options) + specialDecimal;
         }
 
         inputValues.forEach((getValue, index) => {
             let formatted = formatThousands(getValue);
-            if (index == 1) {
+            if (index === 1) {
                 formatted = getValue; //if this is an operator
             } else if (formatted.match(rep_negative)) {
                 formatted = `(${formatted})`;
@@ -269,22 +268,24 @@ export class Calculator extends React.Component<Props, State> {
     }
     
     render() {
-        const calcAnswer = this.formatNumbers(); //this.state.inputValues.join(''); //
+        //const calcAnswer = this.state.inputValues.join('');
         let display = <React.Fragment/>;
-        
 
         if (this.props.showDisplay) {
-            display = <div className='calc-display'>
-                {calcAnswer}
+            display = <div id = 'calc-display-outer'>
+                <div id = 'calc-display'>
+                    {this.formatNumbers()}
+                </div>
             </div>;
         }
         return ( //insert table between <div>
-            <div className='calc-body'>
+            <div className = 'calc-body'>
                 {display}
-                <div className='calc-keypad'>
+                <div className = 'calc-keypad'>
                     {this.renderButtons()}
                 </div>
+                
             </div>
-        );
+        ); //<script src='./calcDisplay.js'></script> - DOESNT WORK
     }
 }

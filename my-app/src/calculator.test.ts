@@ -5,6 +5,7 @@ import {Calculator} from './calculator';
 const calc = new Calculator({
     showDisplay: true
 });
+type State = {inputValues: string[], inputGroup: number, answered: number};
 //UNIT TESTS
 
 test('Filter the inputs properly', () => {
@@ -14,4 +15,11 @@ test('Filter the inputs properly', () => {
         const test = calc.filterMinMax(get);
         expect(test).toBe(results[current]);
     });
+});
+
+test('Calculate 9 x 9', () => {
+    calc.setState({ inputValues: ['9', '*', '9'], inputGroup: 2});
+    const results = '81';
+    const test = calc.calculate(false);
+    expect(test).toBe(results);
 });

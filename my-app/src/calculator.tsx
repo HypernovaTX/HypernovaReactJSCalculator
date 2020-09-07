@@ -127,7 +127,7 @@ export class Calculator extends React.Component<Props, State> {
         }
         
         this.setState({ inputValues, inputGroup, answered });
-        if (inputValues[inputGroup].length < 14) {
+        if (inputValues[inputGroup].length <= 14) {
             this.adjustFontSize(inputValues, true);
         }
     }
@@ -342,6 +342,7 @@ export class Calculator extends React.Component<Props, State> {
         let testSize = fontSize;
         const self = this;
         const outerWidth = this.calcDisplayOuter.current?.clientWidth || 0;
+        const rep_negative = /\-\d*(\.?\d+)/;
 
         function get_tex_width(txt = '', font='') {
             let element = document.createElement('canvas');
@@ -357,6 +358,9 @@ export class Calculator extends React.Component<Props, State> {
         function inputValuesWidth(size = 32) {
             let outputWidth = 16; //Give some small roomes for the text to wiggle
             inputValues.forEach((value) => {
+                if (value.match(rep_negative)) {
+                    value = `(${value})`;
+                }
                 outputWidth += get_tex_width(
                     self.formatThousands(value),
                     size.toString() + "px 'Segoe UI'"

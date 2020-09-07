@@ -26,6 +26,8 @@ code {
   display: flex;
   float: right;
   height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 #calc-display-inner {
   text-align: right;

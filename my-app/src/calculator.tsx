@@ -1,7 +1,5 @@
-import React, { ReactDOM } from 'react'; //, { useState }
-import { isNull, isUndefined } from 'util';
-import { exit } from 'process';
-const textMetrics = require('text-metrics');
+import React from 'react'; //, { useState }
+import { isNull } from 'util';
 //import { stringify } from 'querystring';
 //import { exit, nextTick } from 'process';
 type Props = {showDisplay: boolean};
@@ -129,7 +127,7 @@ export class Calculator extends React.Component<Props, State> {
         
         this.setState({ inputValues, inputGroup, answered });
         if (inputValues[inputGroup].length < 14) {
-            this.adjustFontSize();
+            this.adjustFontSize(inputValues, true);
         }
     }
 
@@ -194,7 +192,7 @@ export class Calculator extends React.Component<Props, State> {
             inputGroup = 0;
         }
         this.setState({ inputValues, inputGroup, answered });
-        this.adjustFontSize();
+        this.adjustFontSize(inputValues, true);
 
         return output;
     }
@@ -204,6 +202,8 @@ export class Calculator extends React.Component<Props, State> {
         let { inputGroup, inputValues, answered } = this.state;
         if (answered === 2) {
             return;
+        } else {
+            answered = 0;
         }
         if (inputValues[inputGroup] === '') {
             inputGroup -= 1;
@@ -215,7 +215,7 @@ export class Calculator extends React.Component<Props, State> {
             }
             this.setState({ inputValues, inputGroup });
         }
-        this.adjustFontSize();
+        this.adjustFontSize(inputValues, true);
     }
 
     //When "C" is pressed
@@ -237,6 +237,7 @@ export class Calculator extends React.Component<Props, State> {
             inputValues = [rawOutput];
         }
         this.setState({ inputValues, inputGroup, answered });
+        this.adjustFontSize(inputValues, true);
     }
 
     //flip between +/- 
@@ -247,6 +248,7 @@ export class Calculator extends React.Component<Props, State> {
 
         inputValues[index] = (answered === 2) ? inputValues[index] : `${-1 * value}`;
         this.setState({ inputValues });
+        this.adjustFontSize(inputValues, true);
     }
 
     formatThousands(input = '0') {
@@ -334,8 +336,9 @@ export class Calculator extends React.Component<Props, State> {
         return contentResult;
     }
 
-    adjustFontSize() {
-        let { fontSize, inputValues , fontPadding} = this.state;
+    adjustFontSize(inputValues = [''], copy = false) {
+        let { fontSize, fontPadding } = this.state;
+        inputValues = (copy) ? inputValues : this.state.inputValues;
         let textWidth = 0;
         let testSize = fontSize;
         const self = this;
@@ -353,7 +356,7 @@ export class Calculator extends React.Component<Props, State> {
         }
 
         function inputValuesWidth(size = 32) {
-            let outputWidth = 0;
+            let outputWidth = 16; //Give some small roomes for the text to wiggle
             inputValues.forEach((value) => {
                 outputWidth += get_tex_width(
                     self.formatThousands(value),
@@ -369,14 +372,21 @@ export class Calculator extends React.Component<Props, State> {
         console.log('display outer - ' + outerWidth);
         console.log('text width - ' + textWidth);
 
-        while (inputValuesWidth(testSize) > outerWidth) {
-            testSize -= 1;
-        }
-        fontSize = testSize;
-        if (inputValuesWidth(32) <= outerWidth) {
+        if (inputValuesWidth(testSize) <= outerWidth) {
             fontSize = 32;
             this.setState({ fontSize });
+            console.log('GENERAL text length is smaller than display');
         }
+        while (inputValuesWidth(testSize) > outerWidth) {
+            testSize --;
+            console.log('Current text length is smaller than display');
+        }
+        while (inputValuesWidth(testSize) < outerWidth && testSize < 32) {
+            testSize ++;
+            console.log('Text length is LARGER than display');
+        }
+        fontSize = testSize;
+        
         this.setState({ fontSize });
     }
     

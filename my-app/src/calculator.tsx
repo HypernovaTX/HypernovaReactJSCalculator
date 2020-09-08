@@ -1,5 +1,6 @@
 import React from 'react'; //, { useState }
-import { isNull } from 'util';
+import { isNull, isUndefined } from 'util';
+import { CalcLogic } from './lib/CalcLogic';
 //import { stringify } from 'querystring';
 //import { exit, nextTick } from 'process';
 type Props = {showDisplay: boolean};
@@ -61,7 +62,7 @@ export class Calculator extends React.Component<Props, State> {
                 roundStringNum();
                 inputGroup ++;
                 if (inputGroup >= 3) {
-                    inputValues = [self.calculate(false), currentInput, '']
+                    inputValues = [self.calculate(false)[0], currentInput, '']
                     inputGroup = 1;
                 } else {
                     inputValues = [inputValues[inputGroup - 1], currentInput];
@@ -134,68 +135,26 @@ export class Calculator extends React.Component<Props, State> {
 
     //Check and see the input does not exceed the min/max number
     filterMinMax(input = '0') {
-        let getFloat = parseFloat(input);
-        let decimals = 0;
-        if (input.match(/\./)) {
-            decimals = Math.min(10, input.split('.')[1].length) || 0;
-        }
-        if (getFloat < 0.0000000001) {
-            return '0';
-        }
-        if (getFloat >= Number.MAX_SAFE_INTEGER) {
-            this.setState({ answered: 2 });
-            return 'OUT OF BOUND';
-        }
-        return getFloat.toFixed(decimals).toString();
+        return CalcLogic.filterMinMax(input);
     }
 
     //self explainatory function
     calculate(endEquation = false) {
         let { inputValues, inputGroup, answered } = this.state;
-        const value_1 = parseFloat(inputValues[0]);
-        const operator = inputValues[1];
-        const value_2 = parseFloat(inputValues[2]);
-        let solution = 0;
-        let output = '';
         
-        //Prevent multi "=" button bug
-        if (Number.isNaN(value_2)) {
-            this.setState({ inputValues });
-            return inputValues[0];
+        let output = CalcLogic.calculate(endEquation, inputValues, inputGroup, answered ) ;
+        if (output.inputValues[0] === "OUT OF BOUND") {
+            output.answered = 2;
         }
 
-        //do the calculation
-        switch (operator) {
-            case ('+'): solution = value_1 + value_2; break;
-            case ('-'): solution = value_1 - value_2; break;
-            case ('*'): solution = value_1 * value_2; break;
-            case ('/'): {
-                if (value_2 !== 0) {
-                    solution = value_1 / value_2;
-                } else {
-                    solution = NaN;
-                    output = "ERROR";
-                    answered = 2;
-                }
-                break;
-            }
-        }
+        this.setState({
+            inputValues: output.inputValues,
+            inputGroup: output.inputGroup,
+            answered: output.answered
+        });
+        this.adjustFontSize(output.inputValues, true);
 
-        //prevent the number exceeding the safe integer territory
-        if (!Number.isNaN(solution)) {
-            output = this.filterMinMax(solution.toString()); //(solution > Number.MAX_SAFE_INTEGER) ? "Out of Bound" : solution.toString();
-        }
-        
-        inputValues = [output];
-        inputGroup = 1;
-        if (endEquation === true && answered === 0) {
-            answered = 1;
-            inputGroup = 0;
-        }
-        this.setState({ inputValues, inputGroup, answered });
-        this.adjustFontSize(inputValues, true);
-
-        return output;
+        return output.inputValues;
     }
 
     //when "<x|" is pressed
@@ -226,18 +185,13 @@ export class Calculator extends React.Component<Props, State> {
 
     //pretty obvious
     squareRoot() {
-        let { inputValues, inputGroup, answered } = this.state;
-        let solution = 0;
-        solution = parseFloat((inputGroup === 2) ? this.calculate(false) : inputValues[0]);
-        if (solution < 0 || answered === 2) {
-            answered = 2;
-            inputValues = ["ERROR"];
-        } else {
-            answered = 1;
-            let rawOutput = this.filterMinMax(Math.sqrt(solution).toString());
-            inputValues = [rawOutput];
-        }
-        this.setState({ inputValues, inputGroup, answered });
+        const { inputValues, inputGroup, answered } = this.state;
+        const output = CalcLogic.squareRoot(inputValues, inputGroup, answered);
+        this.setState({
+            inputValues: output.inputValues,
+            inputGroup: output.inputGroup,
+            answered: output.answered
+        });
         this.adjustFontSize(inputValues, true);
     }
 

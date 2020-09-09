@@ -1,9 +1,12 @@
-import React from 'react'; //, { useState }
+//Importing
+import React from 'react';
 import { isNull, isUndefined } from 'util';
 import { CalcLogic } from './lib/CalcLogic';
-//import { stringify } from 'querystring';
-//import { exit, nextTick } from 'process';
-type Props = {showDisplay: boolean};
+
+/**
+ * @type Prop.showDisplay 
+ */
+type Props = { showDisplay: boolean };
 type State = {
     inputValues: string[],
     inputGroup: number,
@@ -157,7 +160,7 @@ export class Calculator extends React.Component<Props, State> {
         return output.inputValues;
     }
 
-    //when "<x|" is pressed
+    //when "⌫" is pressed
     deleteValues() {
         let { inputGroup, inputValues, answered } = this.state;
         if (answered === 2) {

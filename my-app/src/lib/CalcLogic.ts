@@ -85,8 +85,8 @@ export class CalcLogic {
 
     /**
      * Filter the input number between the lowest and highest safe float
-     * @param {string} input - numbers in 
-     * @returns {string} 
+     * @param {string} input - numbers in string
+     * @returns {string} - filtered float safe numbers in string
      */
     static filterMinMax(input = '0') {
         let getFloat = parseFloat(input);

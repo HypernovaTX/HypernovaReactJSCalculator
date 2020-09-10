@@ -5,11 +5,18 @@ export class CalcEdit {
     static rep_operator() { return /^[\+\-\*\/]*$/; }
     static rep_decimal() { return /\./; }
 
-    //main input function
+     /** Add the value to the current index of the equation (inputValues)
+     * @param {string} input - The value (in string) that goes in
+     * @param {string[]} inputValues - (from STATE) array of numbers and operaters
+     * @param {number} inputGroup - (from STATE) current position of the array from inputValues
+     * @param {number} answered - (from STATE) has the equation ended of not
+     * @returns {object} - As in { inputValues, inputGroup, answered }
+     */
     static addValue(input = '1', inputValues: string[], inputGroup: number, answered: number) {
+        //Prevent undefined/null inputs
         inputValues[inputGroup] = inputValues[inputGroup] || '';
 
-        //ADD
+        //Add the value (whether it's an operator or float value)
         if (input.match(CalcEdit.rep_operator())) {
             return CalcEdit.addOperator(input, inputValues, inputGroup, answered);
         } else {

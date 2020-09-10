@@ -1,18 +1,14 @@
-//Importing
 import React from 'react';
 import { isNull, isUndefined } from 'util';
 import { CalcLogic } from './lib/CalcLogic';
-
-/**
- * @type Prop.showDisplay 
- */
+import { CalcEdit } from './lib/CalcEdit';
 type Props = { showDisplay: boolean };
 type State = {
-    inputValues: string[],
-    inputGroup: number,
-    answered: number,
-    fontSize: number,
-    fontPadding: number
+    inputValues: string[],  //The EQUATION in arrays (example: ["123", "+", "456"])
+    inputGroup: number,     //The current array index of the equation
+    answered: number,       //Solved state of the equation (0 - unsolved, 1 - solved, 2- ERROR)
+    fontSize: number,       //The size of the font for the calculator display
+    fontPadding: number     //The spacing on the display between the valus of the equations
 };
 
 export class Calculator extends React.Component<Props, State> {
@@ -43,94 +39,21 @@ export class Calculator extends React.Component<Props, State> {
         this.calcDisplayOuter = React.createRef();
     }
 
-    //main input function
+    /** The main function to add value to the equation (inputValues)
+     * @param {string} input - The value to add to the equation (inputValues)
+    */
     addValue(input = '1') {
-        const self = this;
-        const rep_operator = /^[\+\-\*\/]*$/;
-        const rep_decimal = /\./;
-        let { inputGroup, inputValues, answered } = self.state;
-        inputValues[inputGroup] = inputValues[inputGroup] || '';
+        let { inputGroup, inputValues, answered } = this.state;
 
-        function roundStringNum(input = '') {
-            return parseFloat(input).toFixed(12).toString();
-        }
+        //call the external function to add the value
+        const addedValue = CalcEdit.addValue(input, inputValues, inputGroup, answered);
+        this.setState({
+            inputValues: addedValue.inputValues,
+            inputGroup: addedValue.inputGroup,
+            answered: addedValue.answered
+        });
 
-        function addOperator(currentInput = '', lastInput = '') {
-            if (answered === 2) {
-                return;
-            }
-            if (lastInput.match(rep_operator)) {
-                inputValues[inputGroup] = currentInput;
-            } else {
-                roundStringNum();
-                inputGroup ++;
-                if (inputGroup >= 3) {
-                    inputValues = [self.calculate(false)[0], currentInput, '']
-                    inputGroup = 1;
-                } else {
-                    inputValues = [inputValues[inputGroup - 1], currentInput];
-                }
-            }
-            answered = 0;
-        }
-
-        function addFloat(currentInput = '') {
-            if (answered === 2) {
-                return;
-            }
-
-            if (answered === 1) {
-                inputGroup = 0;
-                inputValues = ['0'];
-                answered = 0;
-                console.log(self.clearAll);
-            }
-            if (inputValues[inputGroup].match(rep_operator) && inputValues[inputGroup] !== '') {
-                inputGroup ++;
-                inputValues[inputGroup] = '';
-            }
-            if (currentInput === '0') {
-                addZero();
-            } else if (currentInput.match(rep_decimal)) {
-                addDecimal();
-            } else {
-                addNumber(currentInput);
-            }
-        }
-
-        function addZero(check = inputValues[inputGroup]) {
-            if (check === '0' || answered === 2) {
-                return;
-            }
-            if (check.match(rep_decimal)
-            || check.charAt(0) !== '0') {
-                inputValues[inputGroup] += '0';
-            }
-        }
-
-        function addDecimal(check = inputValues[inputGroup]) {
-            if (!check.match(rep_decimal) && answered !== 2) {
-                inputValues[inputGroup] += '.';
-            }
-        }
-
-        function addNumber(currentInput = '', check = inputValues[inputGroup]) {
-            if (check === '0' || check === '') {
-                inputValues[inputGroup] = '';
-            }
-            if (inputValues[inputGroup].length < 14) {
-                inputValues[inputGroup] += currentInput;
-            }
-        }
-
-        //ADD
-        if (input.match(rep_operator)) {
-            addOperator(input, inputValues[inputGroup]);
-        } else {
-            addFloat(input);
-        }
-        
-        this.setState({ inputValues, inputGroup, answered });
+        //Resize the font if needed
         if (inputValues[inputGroup].length <= 14) {
             this.adjustFontSize(inputValues, true);
         }
@@ -141,7 +64,9 @@ export class Calculator extends React.Component<Props, State> {
         return CalcLogic.filterMinMax(input);
     }
 
-    //self explainatory function
+    /** The main function to calculate the equation (inputValues)
+     * @param {string} input - The value to add to the equation (inputValues)
+    */
     calculate(endEquation = false) {
         let { inputValues, inputGroup, answered } = this.state;
         

@@ -1,5 +1,5 @@
 export class CalcLogic {
-    /** solve the equation from inputValues
+    /** solve the equation (inputValues)
      * @param {Boolean} endEquation - whether mark the calculation as a solution or not
      * @param {Array} inputValues - (from STATE) array of numbers and operaters
      * @param {Number} inputGroup - (from STATE) current position of the array from inputValues
@@ -50,8 +50,7 @@ export class CalcLogic {
         return { inputValues, inputGroup, answered };
     }
 
-    //
-    /** Square root 
+    /** Square root the equation (inputValues)
      * @param {Array} inputValues - (from STATE) array of numbers and operaters
      * @param {Number} inputGroup - (from STATE) current position of the array from inputValues
      * @param {Number} answered - (from STATE) has the equation ended of not

@@ -88,10 +88,11 @@ export class Calculator extends React.Component<Props, State> {
     //when "⌫" is pressed
     deleteValues() {
         const { inputGroup, inputValues, answered } = this.state;
-        const results = CalcEdit.deleteValues(inputValues, inputGroup, answered);
+        const output = CalcEdit.deleteValues(inputValues, inputGroup, answered);
         this.setState({
-            inputValues,
-            inputGroup
+            inputValues: output.inputValues,
+            inputGroup: output.inputGroup,
+            answered: output.answered
         });
         this.adjustFontSize(inputValues, true);
     }
@@ -124,6 +125,7 @@ export class Calculator extends React.Component<Props, State> {
         this.adjustFontSize(inputValues, true);
     }
 
+    //Add "," for each thousands on the displayed numbers (will not affect inputValues)
     formatThousands(input = '0') {
         const firstHalf = input.split('.')[0] || input;
         const secondHalf = input.split('.')[1] || '';
@@ -135,6 +137,7 @@ export class Calculator extends React.Component<Props, State> {
         return firstHalf.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + pointDecimal + secondHalf;//Number(input).toLocaleString('en', options) + specialDecimal;
     }
 
+    //Render the buttons on the calculator
     renderButtons() {
         const buttonContent = 'C⌫√+789-456*123/±0.=';
         let contentResult = [];
@@ -182,6 +185,7 @@ export class Calculator extends React.Component<Props, State> {
         return contentResult;
     }
 
+    //Fine tuning the display of the calculator
     formatNumbers() {
         const { inputValues, fontPadding } = this.state;
         const rep_negative = /\-\d*(\.?\d+)/;
@@ -207,6 +211,7 @@ export class Calculator extends React.Component<Props, State> {
         return contentResult;
     }
 
+    //Resize the font of the display so the equation fits in the calculator display container
     adjustFontSize(inputValues = [''], copy = false) {
         let { fontSize, fontPadding } = this.state;
         inputValues = (copy) ? inputValues : this.state.inputValues;

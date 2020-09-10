@@ -176,7 +176,7 @@ export class CalcEdit {
         answered = 0;
         //If the current index of the calculator is blank, go to the previous index
         if (inputValues[inputGroup] === '') {
-            inputGroup -= 1;
+            inputGroup --;
         }
 
         //Delete the value
@@ -186,6 +186,11 @@ export class CalcEdit {
             //Change it to "0" when there's nothing left
             if (inputValues[0] === '') {
                 inputValues[0] = '0';
+            }
+
+            //Prevent stucking in the index of the equation (inputValues) where operators goes
+            if (inputValues[1] === '') {
+                inputGroup --;
             }
         }
         //inputGroup stays above zero

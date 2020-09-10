@@ -162,4 +162,35 @@ export class CalcEdit {
 
         return { inputValues, inputGroup, answered };
     }
+
+    /** Delete the last value (one character at a time) in the equation (inputValues)
+     * @param {string[]} inputValues - (from STATE) array of numbers and operaters
+     * @param {number} inputGroup - (from STATE) current position of the array from inputValues
+     * @param {number} answered - (from STATE) has the equation ended of not
+     * @returns {object} - As in { inputValues, inputGroup, answered}
+     */
+    static deleteValues(inputValues: string[], inputGroup: number, answered: number) {
+        //When there's error, just do nothing and return as it is
+        if (answered === 2) { return { inputValues, inputGroup, answered }; }
+        
+        answered = 0;
+        //If the current index of the calculator is blank, go to the previous index
+        if (inputValues[inputGroup] === '') {
+            inputGroup -= 1;
+        }
+
+        //Delete the value
+        if (inputGroup >= 0) {
+            inputValues[inputGroup] = inputValues[inputGroup].slice(0, -1);
+            
+            //Change it to "0" when there's nothing left
+            if (inputValues[0] === '') {
+                inputValues[0] = '0';
+            }
+        }
+        //inputGroup stays above zero
+        else { inputGroup = 0;}
+
+        return { inputValues, inputGroup, answered };
+    }
 }

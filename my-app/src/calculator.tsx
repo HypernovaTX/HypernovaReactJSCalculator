@@ -87,22 +87,12 @@ export class Calculator extends React.Component<Props, State> {
 
     //when "⌫" is pressed
     deleteValues() {
-        let { inputGroup, inputValues, answered } = this.state;
-        if (answered === 2) {
-            return;
-        } else {
-            answered = 0;
-        }
-        if (inputValues[inputGroup] === '') {
-            inputGroup -= 1;
-        }
-        if (inputGroup >= 0) {
-            inputValues[inputGroup] = inputValues[inputGroup].slice(0, -1);
-            if (inputValues[0] === '') {
-                inputValues[0] = '0';
-            }
-            this.setState({ inputValues, inputGroup });
-        }
+        const { inputGroup, inputValues, answered } = this.state;
+        const results = CalcEdit.deleteValues(inputValues, inputGroup, answered);
+        this.setState({
+            inputValues,
+            inputGroup
+        });
         this.adjustFontSize(inputValues, true);
     }
 

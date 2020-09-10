@@ -82,8 +82,7 @@ export class CalcLogic {
         return { inputValues, inputGroup, answered };
     }
 
-    /**
-     * Filter the input number between the lowest and highest safe float
+    /** Filter the input number between the lowest and highest safe float
      * @param {string} input - numbers in string
      * @returns {string} - filtered float safe numbers in string
      */

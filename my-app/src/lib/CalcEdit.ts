@@ -1,4 +1,3 @@
-///Work in progress
 import { CalcLogic } from './CalcLogic';
 
 export class CalcEdit {

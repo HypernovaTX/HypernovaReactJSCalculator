@@ -248,9 +248,9 @@ export class Calculator extends React.Component<Props, State> {
         }
 
         if (this.props.showDisplay) {
-            display = <div id='calc-display-outer' key='calcDisplayOuter' ref={this.calcDisplayOuter}>
-                <div id='calc-display' key='calcDisplay'>
-                    <div id='calc-display-inner' key='calcDisplayInner' style={styleDisplayFont}>
+            display = <div className='calc-display-outer' key='calcDisplayOuter' ref={this.calcDisplayOuter}>
+                <div className='calc-display' key='calcDisplay'>
+                    <div className='calc-display-inner' key='calcDisplayInner' style={styleDisplayFont}>
                         { this.formatNumbers() }
                     </div>
                 </div>

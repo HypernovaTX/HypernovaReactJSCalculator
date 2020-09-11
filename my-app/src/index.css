@@ -17,19 +17,19 @@ code {
   min-height: 240px;
 }
 
-#calc-display-outer {
+.calc-display-outer {
   height: 1.5em;
   font-size: 32px;
   text-align: right;
 }
-#calc-display {
+.calc-display {
   display: flex;
   float: right;
   height: 100%;
   align-items: center;
   justify-content: center;
 }
-#calc-display-inner {
+.calc-display-inner {
   text-align: right;
   height: fit-content;
 }

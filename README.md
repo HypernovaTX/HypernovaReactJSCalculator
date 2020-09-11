@@ -14,3 +14,4 @@ This is a calculator application I'm building as a learning experience for TypeS
 - Understanding development environment like IDE, npm, debugging, unit testing, documentations, etc.
 - Improvements on code organization and readability
 - Improvements on logics/problem solving
+ 

@@ -11,9 +11,10 @@ export class CalcEdit {
      * @param {number} answered - (from STATE) has the equation ended of not
      * @returns {object} - As in { inputValues, inputGroup, answered }
      */
-    static addValue(input = '1', inputValues: string[], inputGroup: number, answered: number) {
+    static addValue(input = '0', inputValues: string[], inputGroup: number, answered: number) {
         //Prevent undefined/null inputs
         inputValues[inputGroup] = inputValues[inputGroup] || '';
+        input = input || '0';
 
         //Add the value (whether it's an operator or float value)
         if (input.match(CalcEdit.rep_operator())) {
@@ -30,7 +31,8 @@ export class CalcEdit {
      */
     static roundStringNum(input = '') {
         const threshold = 12;
-        return parseFloat(input).toFixed(threshold).toString();
+        let num = parseFloat(input).toFixed(threshold);
+        return parseFloat(num).toString();
     }
 
     /** Add an OPERATOR (+, -, *, /) to the equation (inputValues)

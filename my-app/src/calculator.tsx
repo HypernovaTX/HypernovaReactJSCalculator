@@ -140,47 +140,22 @@ export class Calculator extends React.Component<Props, State> {
     //Render the buttons on the calculator
     renderButtons() {
         const buttonContent = 'C⌫√+789-456*123/±0.=';
-        let contentResult = [];
+        const contentResult = [];
+        const knownButtons: {[k: string]: ((e: string) => JSX.Element)} = {
+            "C": (ele: string) => <div className='calc-button' key={'calc-button-' + ele} onClick={() => this.clearAll()}>{ele}</div>,
+            "=": (ele: string) => <div className='calc-button' key={'calc-button-' + ele} onClick={() => this.calculate()}>{ele}</div>,
+            "±": (ele: string) => <div className='calc-button' key={'calc-button-flip'} onClick={() => this.flipValue()}>{ele}</div>,
+            "√": (ele: string) => <div className='calc-button' key={'calc-button-sqr' + ele} onClick={() => this.squareRoot()}>{ele}</div>,
+            "⌫": (ele: string) => <div className='calc-button' key={'calc-button-del'} onClick={() => this.deleteValues()}>{ele}</div>,
+            "+": (ele: string) => <div className='calc-button' key={'calc-button-' + ele} onClick={() => this.addValue(ele)}>{ele}</div>
+        }
+        
         for (let i = 0; i < buttonContent.length; i++) {
-            const element = buttonContent.charAt(i);
-            switch (element) {
-                case ('C'):
-                    contentResult.push(
-                    <div className='calc-button' key={'calc-button-' + element} onClick={() => this.clearAll()}>
-                        {element}
-                    </div>);
-                    break;
-                case ('='):
-                    contentResult.push(
-                    <div className='calc-button' key={'calc-button-' + element} onClick={() => this.calculate(true)}>
-                        {element}
-                    </div>);
-                    break;
-                case ('±'):
-                    contentResult.push(
-                    <div className='calc-button' key={'calc-button-flip'} onClick={() => this.flipValue()}>
-                        {element}
-                    </div>);
-                    break;
-                case ('√'):
-                    contentResult.push(
-                    <div className='calc-button' key={'calc-button-sqr' + element} onClick={() => this.squareRoot()}>
-                        {element}
-                    </div>);
-                    break;
-                case ('⌫'):
-                    contentResult.push(
-                    <div className='calc-button' key={'calc-button-del'} onClick={() => this.deleteValues()}>
-                        {element}
-                    </div>);
-                    break;
-                default:
-                    contentResult.push(
-                    <div className='calc-button' key={'calc-button-' + element} onClick={() => this.addValue(element)}>
-                        {element}
-                    </div>);
-                    break;
-            }
+            let charValue = buttonContent.charAt(i);
+            let element = charValue in knownButtons ? charValue : '+';
+            let button = knownButtons[element];
+            contentResult.push(button(charValue));
+
         }
         return contentResult;
     }

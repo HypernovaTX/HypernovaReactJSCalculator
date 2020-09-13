@@ -1,5 +1,4 @@
 import React from 'react';
-import { isNull, isUndefined } from 'util';
 import { CalcLogic } from './lib/CalcLogic';
 import { CalcEdit } from './lib/CalcEdit';
 type Props = { showDisplay: boolean };
@@ -178,7 +177,7 @@ export class Calculator extends React.Component<Props, State> {
                 formatted = `(${formatted})`;
             }
             contentResult.push(
-                <span className="calc-display-text" key={formatted + index.toString()} style={spanStyle}>
+                <span className="calc-display-text" key={getValue + index.toString()} style={spanStyle}>
                     {formatted}
                 </span>
             );
@@ -199,7 +198,7 @@ export class Calculator extends React.Component<Props, State> {
         function get_tex_width(txt = '', font='') {
             let element = document.createElement('canvas');
             let context = element.getContext("2d");
-            if (!isNull(context)) {
+            if (context !== null && context !== undefined) {
                 context.font = font;
                 return context.measureText(txt).width;
             } else {

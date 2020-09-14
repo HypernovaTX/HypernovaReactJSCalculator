@@ -223,6 +223,10 @@ export class Calculator extends React.Component<Props, State> {
 
         textWidth = inputValuesWidth(fontSize);
 
+        if (outerWidth <= 0) {
+            return; //exit if it's a test
+        }
+
         if (inputValuesWidth(testSize) <= outerWidth) {
             fontSize = 32;
             this.setState({ fontSize });

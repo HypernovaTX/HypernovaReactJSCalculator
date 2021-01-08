@@ -15,3 +15,5 @@ This is a calculator application I'm building as a learning experience for TypeS
 - Improvements on code organization and readability
 - Improvements on logics/problem solving
  
+
+
